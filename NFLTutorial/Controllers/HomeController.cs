@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using NFLTutorial.Models;
@@ -37,6 +38,25 @@ namespace NFLTutorial.Controllers {
             data.Teams = query.ToList();
 
             return View(data);
+        }
+
+        [HttpPost]
+        public IActionResult Details(TeamViewModel model) {
+            TempData["ActiveConference"] = model.ActiveConference;
+            TempData["ActiveDivision"] = model.ActiveDivision;
+
+            return RedirectToAction("Details", new { ID = model.Team.TeamID });
+        }
+
+        [HttpGet]
+        public IActionResult Details(string id) {
+            var model = new TeamViewModel {
+                Team = context.Teams.Include(c => c.Conference).Include(d => d.Division).FirstOrDefault(t => t.TeamID == id),
+                ActiveConference = TempData?["ActiveConference"]?.ToString() ?? "all",
+                ActiveDivision = TempData?["ActiveDivision"]?.ToString() ?? "all"
+            };
+
+            return View(model);
         }
     }
 }
