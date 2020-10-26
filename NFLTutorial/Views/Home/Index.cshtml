@@ -26,4 +26,23 @@
             }
         </div>
     </div>
+
+    @* Team List *@
+    <div class="col-sm-9">
+        <ul class="list-inline">
+            @foreach (Team team in Model.Teams) {
+                <li class="list-inline-item">
+                    <form asp-controller="Home" asp-action="Details" method="post">
+                        <button type="submit" class="bg-white border-0">
+                            <img src="~/images/@team.LogoImage" alt="@team.Name" title="@team.Name | @team.Conference.Name | @team.Division.Name" />
+                        </button>
+
+                        <input type="hidden" asp-for="@team.TeamID" />
+                        <input type="hidden" asp-for="ActiveConference" />
+                        <input type="hidden" asp-for="ActiveDivision" />
+                    </form>
+                </li>
+            }
+        </ul>
+    </div>
 </div>
