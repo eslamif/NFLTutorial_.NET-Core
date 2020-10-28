@@ -18,6 +18,27 @@ namespace NFLTutorial.Controllers {
         }
 
         public IActionResult Index(string activeConference = "all", string activeDivision = "all") {
+            //Save to session
+            var session = new NFLSession(HttpContext.Session);
+            session.SetActiveConference(activeConference);
+            session.SetActiveDivision(activeDivision);
+
+            //Create cookie
+            int? teamCount = session.GetMyTeamCount();
+
+            if (teamCount == null)
+            {
+                var cookies = new NFLCookies(Request.Cookies);
+                string[] ids = cookies.GetMyTeamIds();
+                List<Team> myTeams = new List<Team>();
+
+                if (ids.Length > 0)
+                {
+                    myTeams = context.Teams.Include(c => c.Conference).Include(d => d.Division).Where(t => ids.Contains(t.TeamID)).ToList();
+                    session.SetMyTeams(myTeams);
+                }
+            }
+
             var data = new TeamListViewModel {
                 ActiveConference = activeConference,
                 ActiveDivision = activeDivision,
@@ -40,22 +61,27 @@ namespace NFLTutorial.Controllers {
             return View(data);
         }
 
-        [HttpPost]
-        public IActionResult Details(TeamViewModel model) {
-            TempData["ActiveConference"] = model.ActiveConference;
-            TempData["ActiveDivision"] = model.ActiveDivision;
+        //[HttpPost]
+        //public IActionResult Details(TeamViewModel model) {
+        //    TempData["ActiveConference"] = model.ActiveConference;
+        //    TempData["ActiveDivision"] = model.ActiveDivision;
 
-            return RedirectToAction("Details", new { ID = model.Team.TeamID });
-        }
+        //    return RedirectToAction("Details", new { ID = model.Team.TeamID });
+        //}
 
         [HttpGet]
         public IActionResult Details(string id) {
+            var session = new NFLSession(HttpContext.Session);
+
             var model = new TeamViewModel {
                 Team = context.Teams.Include(c => c.Conference).Include(d => d.Division).FirstOrDefault(t => t.TeamID == id),
-                ActiveConference = TempData?["ActiveConference"]?.ToString() ?? "all",
-                ActiveDivision = TempData?["ActiveDivision"]?.ToString() ?? "all"
-            };
 
+                //ActiveConference = TempData?["ActiveConference"]?.ToString() ?? "all",
+                //ActiveDivision = TempData?["ActiveDivision"]?.ToString() ?? "all"
+
+                ActiveConference = session.GetActiveConference(),
+                ActiveDivision = session.GetActiveDivision()
+            };
             return View(model);
         }
     }
