@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using NFLTutorial.Migrations;
 using NFLTutorial.Models;
 
 namespace NFLTutorial.Controllers {
@@ -83,6 +84,24 @@ namespace NFLTutorial.Controllers {
                 ActiveDivision = session.GetActiveDivision()
             };
             return View(model);
+        }
+
+        [HttpPost]
+        public RedirectToActionResult Add(TeamViewModel model)
+        {
+            model.Team = context.Teams.Include(c => c.Conference).Include(d => d.Division).Where(t => t.TeamID == model.Team.TeamID).FirstOrDefault();
+
+            var session = new NFLSession(HttpContext.Session);
+            var teams = session.GetMyTeams();
+            teams.Add(model.Team);
+            session.SetMyTeams(teams);
+
+            var cookies = new NFLCookies(Response.Cookies);
+            cookies.SetMyTeamIds(teams);
+
+            TempData["Message"] = $"{model.Team.Name} was added to your favorites.";
+
+            return RedirectToAction("Index", new { ActiveConferend = session.GetActiveConference(), ActiveDivision = session.GetActiveDivision() });
         }
     }
 }
