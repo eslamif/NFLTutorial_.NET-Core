@@ -21,9 +21,9 @@ namespace NFLTutorial {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-            
-            //Enable MVC
-            services.AddControllersWithViews();
+
+            //Enable MVC with NewtonSoftJson (use Json to serialize/deserialize objects in sessions)
+            services.AddControllersWithViews().AddNewtonsoftJson();
 
             //Lowercase routing
             services.AddRouting(options => options.LowercaseUrls = true);
