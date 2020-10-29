@@ -52,6 +52,11 @@ namespace NFLTutorial {
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllerRoute(
+                    name: "",
+                    pattern: "{controller=Home}/{action=Index}/conference/{activeConference}/division/{activeDivision}"
+                );
+
+                endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
